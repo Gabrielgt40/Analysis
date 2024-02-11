@@ -1,0 +1,239 @@
+---
+title: "Relatório análise"
+author: "Gabriel Paiva"
+date: "2023-01-25"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+
+```{r}
+library(readxl)
+library(tidyverse)
+library(rstatix)
+library(DHARMa)
+library(agricolae)
+library(patchwork)
+library(emmeans)
+library(multcomp)
+library(ggthemes)
+library(knitr)
+library(ggpmisc)
+library(ec50estimator)
+library(drc)
+library(car)
+```
+
+# Crescimento 1
+```{r}
+crescimento1 <- read_excel("dados.xlsx") %>% 
+  mutate(dose = as.factor(dose))
+
+modelo1 <- aov (cres ~ inoc*dose, data = crescimento1)
+anova(modelo1)
+
+plot(simulateResiduals(modelo1))
+
+means_modelo1 <- emmeans (modelo1, ~ inoc*dose, type="response")
+means_modelo1
+
+## Comparação dos tratamentos
+### Dose - Inoc
+emms <-  emmeans(means_modelo1, ~inoc|dose, type = "response")
+cld(emms, interaction = "pairwise", Letters = LETTERS)
+
+### Inoc - Dose
+emms <-  emmeans(means_modelo1, ~dose|inoc, type = "response")
+cld(emms, interaction = "pairwise", Letters = LETTERS)
+```
+
+# Crescimento 4
+```{r}
+crescimento4 <- read_excel("dados.xlsx", 2) %>% 
+  mutate(dose = as.factor(dose))
+
+modelo4 <- aov (cres ~ inoc*dose, data = crescimento4)
+anova(modelo4)
+
+plot(simulateResiduals(modelo4))
+
+means_modelo4 <- emmeans (modelo4, ~ inoc*dose, type="response")
+means_modelo4
+
+## Comparação dos tratamentos
+### Dose - Inoc
+emms <-  emmeans(means_modelo4, ~inoc|dose, type = "response")
+cld(emms, interaction = "pairwise", Letters = LETTERS)
+
+### Inoc - Dose
+emms <-  emmeans(means_modelo4, ~dose|inoc, type = "response")
+cld(emms, interaction = "pairwise", Letters = LETTERS)
+```
+
+# Crescimento 6
+```{r}
+crescimento6 <- read_excel("dados.xlsx", 3) %>% 
+  mutate(dose = as.factor(dose))
+
+modelo6 <- aov (cres ~ inoc*dose, data = crescimento6)
+anova(modelo6)
+
+plot(simulateResiduals(modelo6))
+
+means_modelo6 <- emmeans (modelo6, ~ inoc*dose, type="response")
+means_modelo6
+
+## Comparação dos tratamentos
+### Dose - Inoc
+emms <-  emmeans(means_modelo6, ~inoc|dose, type = "response")
+cld(emms, interaction = "pairwise", Letters = LETTERS)
+
+### Inoc - Dose
+emms <-  emmeans(means_modelo6, ~dose|inoc, type = "response")
+cld(emms, interaction = "pairwise", Letters = LETTERS)
+```
+
+# MS Parte aérea
+```{r}
+mspa <- read_excel("dados.xlsx", 4) %>% 
+  mutate(dose = as.factor(dose))
+
+modelomspa <- aov (ms_aerea ~ inoc*dose, data = mspa)
+anova(modelomspa)
+
+plot(simulateResiduals(modelomspa))
+
+means_modelomspa <- emmeans (modelomspa, ~ inoc*dose, type="response")
+means_modelomspa
+
+## Comparação dos tratamentos
+### Dose - Inoc
+emms <-  emmeans(means_modelomspa, ~inoc|dose, type = "response")
+cld(emms, interaction = "pairwise", Letters = LETTERS)
+
+### Inoc - Dose
+emms <-  emmeans(means_modelomspa, ~dose|inoc, type = "response")
+cld(emms, interaction = "pairwise", Letters = LETTERS)
+```
+
+# MS Raiz
+```{r}
+msrz <- read_excel("dados.xlsx", 5) %>% 
+  mutate(dose = as.factor(dose))
+
+modelomsrz <- aov (ms_raiz ~ inoc*dose, data = msrz)
+anova(modelomsrz)
+
+plot(simulateResiduals(modelomsrz))
+
+means_modelomsrz <- emmeans (modelomsrz, ~ inoc*dose, type="response")
+means_modelomsrz
+
+## Comparação dos tratamentos
+### Dose - Inoc
+emms <-  emmeans(means_modelomsrz, ~inoc|dose, type = "response")
+cld(emms, interaction = "pairwise", Letters = LETTERS)
+
+### Inoc - Dose
+emms <-  emmeans(means_modelomsrz, ~dose|inoc, type = "response")
+cld(emms, interaction = "pairwise", Letters = LETTERS)
+```
+
+```{r}
+comb <- read_excel("dados.xlsx", 6) %>% 
+  mutate(exp = as.factor(exp),
+         cres = as.numeric(cres))
+
+comb %>% 
+ggplot(aes(dose, cres, color = exp)) + 
+  geom_point()+
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE) +
+  stat_poly_eq(formula = y ~ x, eq.with.lhs = "italic((y))~`=`~", aes(label = paste(..eq.label.., ..rr.label.., sep = "~")), parse = TRUE) +
+  facet_grid(~inoc) +
+  scale_color_manual(values = c("#610d04", "#124203", "#03094a")) +
+  labs(x = "Doses (%)",
+       y = "Plant height  (cm)",
+       color = "Days after planting") +
+  ylim(10, 125) +
+  scale_x_continuous(breaks = seq(0, 125, by = 25)) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+ggsave("Crescimento.png", width=7.5, height=4 , dpi=600)
+```
+
+```{r}
+comb2 <- read_excel("dados.xlsx", 7) %>% 
+  mutate(exp = as.factor(exp),
+         cres = as.numeric(cres))
+
+comb2 %>% 
+ggplot(aes(dose, cres, color = exp)) + 
+  geom_point()+
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE) +
+  stat_poly_eq(formula = y ~ x, eq.with.lhs = "italic((y))~`=`~", aes(label = paste(..eq.label.., ..rr.label.., sep = "~")), parse = TRUE) +
+  facet_grid(~inoc) +
+  scale_color_manual(values = c("#124203", "#03094a")) +
+  labs(y = "Shoot (g)",
+       x = "Doses (%)",
+       color = "Dry dough") +
+  scale_x_continuous(breaks = seq(0, 125, by = 25)) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+ggsave("Massa seca.png", width=7.5, height=4 , dpi=600)
+```
+
+# 2
+## Álcool
+```{r}
+dados2 <- read_excel("dados2.xlsx",2)
+
+modelo7 <- aov (mort ~ trat, data = dados2)
+anova(modelo7)
+
+plot(simulateResiduals(modelo7))
+
+means_modelo7 <- emmeans (modelo7, ~ trat, type="response")
+means_modelo7
+
+## Comparação dos tratamentos
+emms <-  emmeans(means_modelo7, ~ trat, type = "response")
+cld(emms, interaction = "pairwise", Letters = LETTERS)
+```
+
+
+```{r}
+dados2 <- read_excel("dados2.xlsx",4) %>% 
+  mutate(trat = as.factor(trat))
+
+dados2 %>% 
+ggplot(aes(trat, mort)) + 
+  geom_point()+
+  geom_smooth(method = "auto", formula = y ~ x, se = FALSE) +
+  stat_poly_eq(formula = y ~ x, eq.with.lhs = "italic((y))~`=`~", aes(label = paste(..eq.label.., ..rr.label.., sep = "~")), parse = TRUE) +
+  labs(y = "Mortalidade (%)",
+       x = "Doses") +
+  theme_classic() +
+  ylim(0,105) +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+## Diâmetro
+```{r}
+dados3 <- read_excel("dados2.xlsx",3)
+
+modelo7 <- aov (dam ~ trat, data = dados3)
+anova(modelo7)
+
+plot(simulateResiduals(modelo7))
+
+means_modelo7 <- emmeans (modelo7, ~ trat, type="response")
+means_modelo7
+
+## Comparação dos tratamentos
+emms <-  emmeans(means_modelo7, ~ trat, type = "response")
+cld(emms, interaction = "pairwise", Letters = LETTERS)
+```
+
